@@ -44,6 +44,7 @@ class _myHomePageState extends State<myHomePage> {
             title: Text(value.title,textAlign: TextAlign.center,
             style: GoogleFonts.almarai(fontSize: 16,color: value.textColor()),),
             backgroundColor: value.widgetColor(),
+            centerTitle: true,
             leading: IconButton(
               onPressed: (){Get.to(()=> const setting(),transition: Transition.fade);},
               icon: Icon(Icons.settings,color: value.textColor(),),

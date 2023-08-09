@@ -52,6 +52,10 @@ dependencies:
   table_calendar:
   flutter_local_notifications:
   image_picker:
+  firebase_core: ^2.4.1
+  firebase_auth:
+  cloud_firestore:
+
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +89,7 @@ flutter:
     - imgs/days.png
     - imgs/future.png
     - imgs/nimal.png
+    - imgs/shap.json
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

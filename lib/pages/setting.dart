@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:taskmaster/getController/loading.dart';
 import 'package:taskmaster/getController/mainController.dart';
+import 'package:taskmaster/pages/login.dart';
+import 'package:taskmaster/pages/profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 
@@ -16,7 +20,7 @@ class setting extends StatefulWidget {
 
 class _settingState extends State<setting> {
 
-
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Color> colors = [Colors.red,Colors.blue,Colors.deepOrange,Colors.green,Colors.purple,Colors.indigo,Colors.orange,Colors.pink,Colors.teal];
   @override
   Widget build(BuildContext context) {
@@ -33,6 +37,7 @@ class _settingState extends State<setting> {
               title: Text('الاعدادات',textAlign: TextAlign.center,
                 style: GoogleFonts.almarai(fontSize: 16,color: value.textColor()),),
               backgroundColor: value.widgetColor(),
+              centerTitle: true,
               leading: IconButton(
                 onPressed: (){Get.back();},
                 icon: Icon(Icons.keyboard_arrow_left,color: value.textColor(),),
@@ -49,44 +54,78 @@ class _settingState extends State<setting> {
                 child: ListView(
                   children: [
                     const SizedBox(height: 20,),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: InkWell(
-                        onTap: (){
-                          value.returnMessgae('عذرا', 'التطبيق في وضع التطوير حاليا');
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Image.asset('imgs/logo.png',height: 65,width: 65,),
-                                const SizedBox(width: 10,),
-                                Container(
-                                  height: 40,
-                                  width: 3,
-                                  color: value.primaryColor,
+                    auth.currentUser == null ?
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: InkWell(
+                            onTap: (){
+                              Get.to(()=> login(close: true),transition: Transition.fade);
+                            },
+                            child: Card(
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              child: Container(
+                                width: Get.width,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: value.primaryColor
                                 ),
-                                const SizedBox(width: 5,),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('محمد اسماعيل الجاف',textAlign: TextAlign.right,
-                                      style: GoogleFonts.almarai(fontSize: 17,color: value.textColor(),fontWeight: FontWeight.bold),),
-                                    Text('07719019877',textAlign: TextAlign.right,
-                                      style: GoogleFonts.almarai(fontSize: 15,color: value.textColor()),),
-                                  ],
+                                child: Center(
+                                  child: Text('تسجيل دخول',textAlign: TextAlign.center,
+                                  style: GoogleFonts.almarai(fontSize: 14,color: Colors.white),),
                                 ),
-                              ],
+                              ),
                             ),
-                            IconButton(
-                              onPressed: (){},
-                              icon: Icon(Icons.edit,color: value.textColor() ,size: 20,),
-                            )
-                          ],
-                        ),
-                      ),
+                          ),
+                        )
+                        : StreamBuilder(
+                      stream: _firestore.collection('users').doc(auth.currentUser!.uid).snapshots(),
+                      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+                        if(snapshot.connectionState == ConnectionState.waiting){return const loading();}
+                        else{
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: InkWell(
+                              onTap: (){
+                                Get.to(()=> profile(name: snapshot.data!['name'],),transition: Transition.fade);
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Image.asset('imgs/logo.png',height: 65,width: 65,),
+                                      const SizedBox(width: 10,),
+                                      Container(
+                                        height: 40,
+                                        width: 3,
+                                        color: value.primaryColor,
+                                      ),
+                                      const SizedBox(width: 5,),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(snapshot.data!['name'].toString() == '' ? 'لم يحدد الاسم بعد' : snapshot.data!['name'].toString(),textAlign: TextAlign.right,
+                                            style: GoogleFonts.almarai(fontSize: 16,color: value.textColor(),fontWeight: FontWeight.bold),),
+                                          const SizedBox(height: 5,),
+                                          Text(snapshot.data!['email'],textAlign: TextAlign.right,
+                                            style: GoogleFonts.almarai(fontSize: 15,color: value.textColor()),),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  IconButton(
+                                    onPressed: (){},
+                                    icon: Icon(Icons.edit,color: value.textColor() ,size: 20,),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      },
                     ),
                     const SizedBox(height: 20,),
                     Padding(
